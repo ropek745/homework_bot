@@ -96,7 +96,6 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения"""
     if PRACTICUM_TOKEN is None:
         logger.critical('Отсутствие ключа PRACTICUM_TOKEN!!!')
         return False
