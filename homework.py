@@ -18,7 +18,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = RotatingFileHandler('my_logger.log', maxBytes=50000000, backupCount=5)
+handler = RotatingFileHandler(
+    'my_logger.log',
+    maxBytes=50000000,
+    backupCount=5
+)
 logger.addHandler(handler)
 formatter = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -57,7 +61,7 @@ def get_api_answer(current_timestamp):
         params=params
     )
     if homework_statuses.status_code != HTTPStatus.OK:
-        logger.error(f'Ошибка эндпоинта при запросе к API')
+        logger.error('Ошибка эндпоинта при запросе к API')
         raise EndpointException('Incorrect response code')
     else:
         return homework_statuses.json()
@@ -77,7 +81,6 @@ def check_response(response):
     if not isinstance(response, dict):
         logger.error('Неверный тип ответа от API. Ответ не в форме словаря.')
         raise 'Incorrect type. This type not dict.'
-    # The situation when the response from the API does not contain the homeworks key
     if 'homeworks' not in response:
         logger.error('Отсутствие ключа homeworks в ответе API.')
         raise 'Key "homeworks" not found.'
@@ -93,10 +96,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """
-    Проверяет доступность переменных окружения,
-    необходимых для работы программы.
-    """
+    """Проверяет доступность переменных окружения"""
     if PRACTICUM_TOKEN is None:
         logger.critical('Отсутствие ключа PRACTICUM_TOKEN!!!')
         return False
@@ -115,7 +115,7 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     if not check_tokens():
-        raise ValueError('Ошибка токена. Проверьте его наличие или корректность')
+        raise ValueError('Проверьте его наличие токена или корректность')
     while True:
         try:
             response = get_api_answer(current_timestamp)
