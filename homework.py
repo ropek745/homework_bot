@@ -8,12 +8,6 @@ import telegram
 
 from exceptions import TelegramErrorException
 
-LOG_FILENAME = __file__ + '.log'
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=LOG_FILENAME,
-    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
-)
 
 load_dotenv()
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -146,4 +140,10 @@ def main():
 
 
 if __name__ == '__main__':
+    LOG_FILENAME = __file__ + '.log'
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=LOG_FILENAME,
+        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
+)
     main()
