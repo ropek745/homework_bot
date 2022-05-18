@@ -145,5 +145,5 @@ if __name__ == '__main__':
         level=logging.INFO,
         handlers=LOG_FILENAME,
         format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
-)
+    )
     main()
