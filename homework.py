@@ -115,6 +115,7 @@ def parse_status(homework):
 
 
 def check_tokens():
+    """Проверка доступности токенов."""
     for name in TOKENS:
         if globals()[name] is None:
             return False
