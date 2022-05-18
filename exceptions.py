@@ -1,0 +1,2 @@
+class TelegramErrorException(Exception):
+    pass
