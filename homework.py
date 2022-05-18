@@ -9,7 +9,6 @@ from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 import telegram
 
-from exceptions import EndpointException
 
 LOG_FILENAME = __file__ + '.log'
 logging.basicConfig(
@@ -81,7 +80,7 @@ def get_api_answer(current_timestamp):
         )
     # Страховка на cлучай отличного от 200 кода
     if response.status_code != HTTPStatus.OK:
-        raise EndpointException(
+        raise ValueError(
             ENDPOINT_ERROR.format(code=response.status_code)
         )
     # Страховка для отказа от обслуживания
