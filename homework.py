@@ -8,6 +8,12 @@ import telegram
 
 from exceptions import TelegramErrorException
 
+LOG_FILENAME = __file__ + '.log'
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=LOG_FILENAME,
+    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
+)
 
 load_dotenv()
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -17,7 +23,7 @@ TOKENS = ('PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID')
 
 SEND_MESSAGE_ERROR = 'Ошибка {error} при отправке сообщения!'
 SEND_MESSAGE_SUCCSES = 'Сообщение {message} успешно отправлено!'
-UNKNOW_STATUS = 'Неизвестный статут {status}'
+UNKNOWN_STATUS = 'Неизвестный статуc {status}'
 NO_VALUES = 'Отсутствуют вердикты.'
 NO_TOKEN = 'Токен {token} не найден.'
 PARSE_RETURN = 'Изменился статус проверки работы "{name}". {verdict}'
@@ -98,11 +104,12 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает статус конкретного ДЗ."""
+    name = homework['homework_name']
     status = homework['status']
     if status not in VERDICTS:
-        raise ValueError(UNKNOW_STATUS.format(status=status))
+        raise ValueError(UNKNOWN_STATUS.format(status=status))
     return PARSE_RETURN.format(
-        name=homework['homework_name'],
+        name=name,
         verdict=VERDICTS[status]
     )
 
@@ -128,6 +135,7 @@ def main():
             homeworks = check_response(response)
             if homeworks:
                 message = parse_status(homeworks[0])
+                print(check_response)
                 send_message(bot, message)
             current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
@@ -138,10 +146,4 @@ def main():
 
 
 if __name__ == '__main__':
-    LOG_FILENAME = __file__ + '.log'
-    logging.basicConfig(
-        level=logging.DEBUG,
-        handlers=LOG_FILENAME,
-        format='%(asctime)s, %(levelname)s, %(funcName)s, %(message)s'
-    )
     main()
