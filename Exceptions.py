@@ -1,6 +1,2 @@
-class EndpointException(Exception):
-    pass
-
-
-class KeyError(Exception):
+class TelegramErrorException(Exception):
     pass
