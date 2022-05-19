@@ -18,16 +18,16 @@ SEND_MESSAGE_SUCCSES = 'Сообщение {message} успешно отправ
 UNKNOWN_STATUS = 'Неизвестный статуc {status}'
 NO_VALUES = 'Отсутствуют вердикты.'
 TOKENS_ERROR = 'Отсутствует токен {token}'
-NO_TOKEN = 'Токен {token} не найден.'
+NO_TOKEN = 'Ошибка токена(ов).'
 PARSE_RETURN = 'Изменился статус проверки работы "{name}". {verdict}'
 ERROR_MESSAGE = 'Сбой в работе программы: {error}'
-TYPE_ERROR_1 = ('Ответ запроса вернул некорректный тип данных "{type}".'
+TYPE_ERROR_1 = ('Ответ API вернул некорректный тип "{type}".'
                 'Ожидался словарь.')
-TYPE_ERROR_2 = ('Ответ запроса вернул некорректный тип данных "{type}".'
-                'Ожидался "list".')
+TYPE_ERROR_2 = ('Ответ API вернул некорректный тип "{type}".'
+                'Ожидался список.')
 EMPTY_LIST = 'Список пустой'
 HOMEWORKS_ERROR = 'Ключ "homeworks" отсутствует в словаре.'
-RESPONSE_JSON_ERROR = ('Произошла ошибка {error_key}. Параметры: {error}'
+RESPONSE_JSON_ERROR = ('Произошла ошибка {error_value}. Параметры: {error}'
                        '{url}, {headers}, {params}')
 HTTPSTATUS_ERROR = ('Некорректный код ответа от {code}.'
                     'Параметры запроса: {url}, {headers}, {params}')
@@ -80,7 +80,7 @@ def get_api_answer(current_timestamp):
     for error in ['code', 'error']:
         if error in response_json:
             raise ValueError(RESPONSE_JSON_ERROR.format(
-                error_key=response_json[error],
+                error_value=response_json[error],
                 error=error,
                 **request_settings)
             )
@@ -113,10 +113,7 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка доступности токенов."""
-    errors = []
-    for name in TOKENS:
-        if globals()[name] is None:
-            errors.append(name)
+    errors = [name for name in TOKENS if globals()[name] is None]
     if errors:
         logging.critical(TOKENS_ERROR.format(token=errors))
         return False
@@ -133,10 +130,7 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            if homeworks:
-                message = parse_status(homeworks[0])
-                print(check_response)
-                send_message(bot, message)
+            if homeworks and send_message(bot, parse_status(homeworks[0])):
                 current_timestamp = response.get(
                     'current_date', current_timestamp)
         except Exception as error:
@@ -156,5 +150,4 @@ if __name__ == '__main__':
         ],
         format='%(asctime)s, %(levelname)s, %(message)s'
     )
-    print(__file__)
     main()
