@@ -6,8 +6,6 @@ import logging
 from dotenv import load_dotenv
 import telegram
 
-from exceptions import TelegramErrorException
-
 
 load_dotenv()
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -19,13 +17,17 @@ SEND_MESSAGE_ERROR = 'Ошибка {error} при отправке сообще�
 SEND_MESSAGE_SUCCSES = 'Сообщение {message} успешно отправлено!'
 UNKNOWN_STATUS = 'Неизвестный статуc {status}'
 NO_VALUES = 'Отсутствуют вердикты.'
+TOKENS_ERROR = 'Отсутствует токен {token}'
 NO_TOKEN = 'Токен {token} не найден.'
 PARSE_RETURN = 'Изменился статус проверки работы "{name}". {verdict}'
 ERROR_MESSAGE = 'Сбой в работе программы: {error}'
-TYPE_ERROR = 'Ответ запроса имеет некорректный тип "{type}".'
+TYPE_ERROR_DICT = ('Ответ запроса вернул некорректный тип "{type}".'
+                   'Ожидался "dict".')
+TYPE_ERROR_LIST = ('Ответ запроса вернул некорректный тип "{type}".'
+                   'Ожидался "list".')
 EMPTY_LIST = 'Список пустой'
 HOMEWORKS_ERROR = 'Ключ "homeworks" отсутствует в словаре.'
-RESPONSE_JSON_ERROR = ('Произошла ошибка {error}. Параметры: '
+RESPONSE_JSON_ERROR = ('Произошла ошибка {error_key}. Параметры: {error}'
                        '{url}, {headers}, {params}')
 HTTPSTATUS_ERROR = ('Некорректный код ответа от {code}.'
                     'Параметры запроса: {url}, {headers}, {params}')
@@ -48,7 +50,7 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info(SEND_MESSAGE_SUCCSES.format(message=message))
         return True
-    except TelegramErrorException as error:
+    except telegram.error.TelegramError as error:
         logging.info(SEND_MESSAGE_ERROR.format(error=error, message=message))
         return False
 
@@ -78,6 +80,7 @@ def get_api_answer(current_timestamp):
     for error in ['code', 'error']:
         if error in response_json:
             raise ValueError(RESPONSE_JSON_ERROR.format(
+                error_key=response_json[error],
                 error=error,
                 **request_settings)
             )
@@ -86,13 +89,13 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет API на корректность."""
-    homeworks = response['homeworks']
     if not isinstance(response, dict):
-        raise TypeError(TYPE_ERROR.format(value=type(response)))
+        raise TypeError(TYPE_ERROR_DICT.format(value=type(response)))
     if 'homeworks' not in response:
         raise KeyError(HOMEWORKS_ERROR)
+    homeworks = response['homeworks']
     if not isinstance(homeworks, list):
-        raise TypeError(TYPE_ERROR.format(value=type(homeworks)))
+        raise TypeError(TYPE_ERROR_LIST.format(value=type(homeworks)))
     return homeworks
 
 
@@ -110,10 +113,13 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка доступности токенов."""
+    errors = []
     for name in TOKENS:
         if globals()[name] is None:
-            logging.critical(NO_TOKEN.format(token=name))
-            return False
+            errors.append(name)
+    if errors:
+        logging.critical(TOKENS_ERROR.format(token=errors))
+        return False
     return True
 
 
@@ -131,7 +137,8 @@ def main():
                 message = parse_status(homeworks[0])
                 print(check_response)
                 send_message(bot, message)
-            current_timestamp = response.get('current_date', current_timestamp)
+                current_timestamp = response.get(
+                    'current_date', current_timestamp)
         except Exception as error:
             message = ERROR_MESSAGE.format(error=error)
             logging.error(message, exc_info=True)
@@ -143,7 +150,11 @@ if __name__ == '__main__':
     LOG_FILENAME = __file__ + '.log'
     logging.basicConfig(
         level=logging.INFO,
-        handlers=LOG_FILENAME,
-        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
+        handlers=[
+            logging.FileHandler(LOG_FILENAME, 'w', 'utf-8'),
+            logging.StreamHandler()
+        ],
+        format='%(asctime)s, %(levelname)s, %(message)s'
     )
+    print(__file__)
     main()
