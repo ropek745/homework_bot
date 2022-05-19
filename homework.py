@@ -21,10 +21,10 @@ TOKENS_ERROR = 'Отсутствует токен {token}'
 NO_TOKEN = 'Токен {token} не найден.'
 PARSE_RETURN = 'Изменился статус проверки работы "{name}". {verdict}'
 ERROR_MESSAGE = 'Сбой в работе программы: {error}'
-TYPE_ERROR_DICT = ('Ответ запроса вернул некорректный тип "{type}".'
-                   'Ожидался "dict".')
-TYPE_ERROR_LIST = ('Ответ запроса вернул некорректный тип "{type}".'
-                   'Ожидался "list".')
+TYPE_ERROR_1 = ('Ответ запроса вернул некорректный тип данных "{type}".'
+                'Ожидался словарь.')
+TYPE_ERROR_2 = ('Ответ запроса вернул некорректный тип данных "{type}".'
+                'Ожидался "list".')
 EMPTY_LIST = 'Список пустой'
 HOMEWORKS_ERROR = 'Ключ "homeworks" отсутствует в словаре.'
 RESPONSE_JSON_ERROR = ('Произошла ошибка {error_key}. Параметры: {error}'
@@ -90,12 +90,12 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет API на корректность."""
     if not isinstance(response, dict):
-        raise TypeError(TYPE_ERROR_DICT.format(value=type(response)))
+        raise TypeError(TYPE_ERROR_1.format(type=type(response)))
     if 'homeworks' not in response:
         raise KeyError(HOMEWORKS_ERROR)
     homeworks = response['homeworks']
     if not isinstance(homeworks, list):
-        raise TypeError(TYPE_ERROR_LIST.format(value=type(homeworks)))
+        raise TypeError(TYPE_ERROR_2.format(type=type(homeworks)))
     return homeworks
 
 
